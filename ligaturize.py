@@ -63,7 +63,7 @@ class LigatureCreator(object):
         try:
             self.firacode.selection.none()
             print(' ...Selecting', ligature_name, end='')
-            self.firacode.selection.select(("unicode"), ligature_name)
+            self.firacode.selection.select(("unicode",), ligature_name)
             self.firacode.copy()
             return True
         except ValueError as e:
@@ -155,7 +155,7 @@ class LigatureCreator(object):
 
         self._lig_counter += 1
         ligature_name = 'lig.{}'.format(self._lig_counter)
-        print('\033[1;36m'+'HELLO')
+        print('\033[1;36m', ligature_name, end='')
 
         self.font.createChar(-1, ligature_name)
         self.font.selection.none()
@@ -223,7 +223,7 @@ class LigatureCreator(object):
             first = input_chars[0],
             rest = ' '.join(input_chars[1:]))
 
-        print('\033[1;37m[\033[1;36mX\033[1;37m]\033[0m')
+        print(' \033[1;37m[\033[1;36mX\033[1;37m]\033[0m')
 
     def add_calt(self, calt_name, subtable_name, spec, **kwargs):
         spec = spec.format(**kwargs)
