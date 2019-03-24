@@ -36,13 +36,13 @@ if sys.version_info[0] != 2:
     sys.exit(1)
 
 def get_ligature_source(fontname):
-    variant = 'Sans'
-    for weight in ['Bold']:
-        if fontname.endswith('-' + weight):
-            # Exact match for one of the Fira Code weights
-            return 'fonts/dejaVu/DejaVu{}-{}.ttf'.format(variant, weight)
+    # variant = 'Sans'
+    # for weight in ['Bold']:
+    #     if fontname.endswith('-' + weight):
+    #         # Exact match for one of the Fira Code weights
+    #         return 'fonts/dejaVu/DejaVu{}-{}.ttf'.format(variant, weight)
     # else return base fontface
-    return 'fonts/dejaVu/DejaVu{}.ttf'.format(variant)
+    return 'fonts/dejaVu/DejaVuSans.ttf'
 
 class LigatureCreator(object):
 
@@ -120,7 +120,7 @@ class LigatureCreator(object):
             self.font.selection.none()
             self.font.selection.select(("unicode",), char)
             self.font.paste()
-            self.correct_character_width(self.font[char])
+            # self.correct_character_width(self.font[char])
 
     def correct_ligature_width(self, glyph):
         """Correct the horizontal advance and scale of a ligature."""
@@ -173,7 +173,7 @@ class LigatureCreator(object):
             self.font.selection.none()
             self.font.selection.select(ligature_name)
             self.font.paste()
-            self.correct_ligature_width(self.font[ligature_name])
+            # self.correct_ligature_width(self.font[ligature_name])
 
             self.font.selection.none()
             self.font.selection.select('space')
