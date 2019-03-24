@@ -23,43 +23,14 @@ SCALE_CHARACTER_GLYPHS_THRESHOLD = 0.1
 # Don't put fonts licensed under UFL here, and don't put fonts licensed under
 # SIL OFL here either unless they haven't specified a Reserved Font Name.
 
-prefixed_fonts = [
-  # Apache 2.0 license
-  'fonts/codeface/fonts/cousine/*.ttf',
-  'fonts/codeface/fonts/droid-sans-mono/*.ttf',
-  'fonts/codeface/fonts/meslo/*.ttf',
-  'fonts/codeface/fonts/roboto-mono/*.ttf',
-
-  # MIT license
-  'fonts/codeface/fonts/dejavu-sans-mono/*.ttf',
-  'fonts/codeface/fonts/hack/*.ttf',
-
-  # SIL OFL with no Reserved Font Name
-  'fonts/codeface/fonts/edlo/*.ttf',
-  'fonts/codeface/fonts/fantasque-sans-mono/*.ttf',
-  'fonts/codeface/fonts/inconsolata/*.ttf',
-]
+prefixed_fonts = ["fonts/plex/*.otf"]
 
 #### Fonts that need to be renamed. ####
 # These are fonts that either have name collisions with the prefixed_fonts
 # above, or are released under licenses that permit modification only if we
 # change the name of the modified fonts.
 
-renamed_fonts = {
-  # This doesn't have a reserved name, but if we don't rename it it'll collide
-  # with its sibling Fantasque Sans Mono Normal, listed above.
-  'fonts/FantasqueSansMono-NoLoopK/*.otf': 'Liga Fantasque Sans Mono NoLoopK',
-
-  # SIL OFL with reserved name
-  'fonts/codeface/fonts/anonymous-pro/*.ttf': 'Liganymous',
-  'fonts/plex/IBM-Plex-Mono/fonts/complete/ttf/*.ttf': 'Ligalex Mono',
-  'fonts/codeface/fonts/oxygen-mono/*.otf': 'Liga O2 Mono',
-  'fonts/codeface/fonts/source-code-pro/*.ttf': 'LigaSrc Pro',
-  'fonts/SourceCodeVariable*': 'LigaSrc Variable',
-
-  # UFL
-  'fonts/codeface/fonts/ubuntu-mono/*.ttf': 'Ubuntu Mono Ligaturized',
-}
+renamed_fonts = {}
 
 #### Fonts we can't ligaturize. ####
 # Fonts that we can't ligaturize because their licences do not permit derivative
