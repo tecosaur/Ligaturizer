@@ -62,7 +62,7 @@ class LigatureCreator(object):
     def copy_ligature_from_source(self, ligature_name):
         try:
             self.firacode.selection.none()
-            print(' ...Selecting', ligature_name, end='')
+            print(' ...selecting', ligature_name, end='')
             self.firacode.selection.select(("unicode",), ligature_name)
             self.firacode.copy()
             return True
@@ -113,11 +113,12 @@ class LigatureCreator(object):
         print("    \033[0;36m...copying %d character glyphs...\033[0m" % (len(chars)))
 
         for char in chars:
+            print('  -', char)
             self.firacode.selection.none()
-            self.firacode.selection.select(char)
+            self.firacode.selection.select(("unicode",), char)
             self.firacode.copy()
             self.font.selection.none()
-            self.font.selection.select(char)
+            self.font.selection.select(("unicode",), char)
             self.font.paste()
             self.correct_character_width(self.font[char])
 
@@ -133,19 +134,29 @@ class LigatureCreator(object):
         # resize -- but we may want to adjust the bearings. And we can't just
         # center it, because ligatures are characterized by very large negative
         # left bearings -- they advance 1em, but draw from (-(n-1))em to +1em.
+        if glyph.width == 0:
+            raise TypeError('Glyph cannot have 0 width')
         scale = float(self.emwidth) / glyph.width
         glyph.transform(psMat.scale(scale, 1.0))
         glyph.width = self.emwidth
 
     def add_ligature(self, input_chars, firacode_ligature_name):
-        print('\033[1;32m{action}:\033[0m \033[1;30m{codepoint}\033[0m (\033[35m{name}\033[0m) \033[1;36m{trigger}\033[0m'.format(
+        try:
+            print('\033[1;32m{action}:\033[0m \033[1;30m{codepoint}\033[0m (\033[35m{name}\033[0m) \033[1;36m{trigger}\033[0m'.format(
+                action='ADDING',
+                codepoint=hex(firacode_ligature_name) if firacode_ligature_name != None else '',
+                name=unicodedata.name(unichr(firacode_ligature_name)) if firacode_ligature_name != None else '\033[37m,\033[35m '.join(map(lambda x: unicodedata.name(unichr(x)), input_chars)),
+                trigger=''.join(map(lambda e: str(e), input_chars)) if firacode_ligature_name != None else ''), end=' ')
+        except Exception:
+            print('\033[1;32m{action}:\033[0m \033[1;30m{codepoint} \033[0;34m(reduced info)\033[0m'.format(
             action='ADDING',
-            codepoint=hex(firacode_ligature_name) if firacode_ligature_name != None else '',
-            name=unicodedata.name(unichr(firacode_ligature_name)) if firacode_ligature_name != None else '\033[37m,\033[35m '.join(map(lambda e: str(e), input_chars)),
-            trigger=''.join(map(lambda e: str(e), input_chars)) if firacode_ligature_name != None else ''), end=' ')
+            codepoint=hex(firacode_ligature_name) if firacode_ligature_name != None else ''), end=' ')
         if firacode_ligature_name is None:
             # No ligature name -- we're just copying a bunch of individual characters.
-            self.copy_character_glyphs(input_chars)
+            try:
+                self.copy_character_glyphs(input_chars)
+            except Exception as e:
+                print('\033[1;31m  ...ERROR!\033[0;31m', e, '\033[0m', end='')
             return
 
         if not self.copy_ligature_from_source(firacode_ligature_name):
@@ -153,77 +164,83 @@ class LigatureCreator(object):
             print('\033[1;31m  ...ERROR! \033[0;31mLigature not in source font!\033[0m')
             return
 
-        self._lig_counter += 1
-        ligature_name = 'lig.{}'.format(self._lig_counter)
-        print('\033[1;36m', ligature_name, end='')
+        try:
 
-        self.font.createChar(-1, ligature_name)
-        self.font.selection.none()
-        self.font.selection.select(ligature_name)
-        self.font.paste()
-        self.correct_ligature_width(self.font[ligature_name])
+            self._lig_counter += 1
+            ligature_name = 'lig.{}'.format(self._lig_counter)
 
-        self.font.selection.none()
-        self.font.selection.select('space')
-        self.font.copy()
+            self.font.createChar(-1, ligature_name)
+            self.font.selection.none()
+            self.font.selection.select(ligature_name)
+            self.font.paste()
+            self.correct_ligature_width(self.font[ligature_name])
 
-        lookup_name = lambda i: 'lookup.{}.{}'.format(self._lig_counter, i)
-        lookup_sub_name = lambda i: 'lookup.sub.{}.{}'.format(self._lig_counter, i)
-        cr_name = lambda i: 'CR.{}.{}'.format(self._lig_counter, i)
+            self.font.selection.none()
+            self.font.selection.select('space')
+            self.font.copy()
 
-        for i, char in enumerate(input_chars):
-            self.font.addLookup(lookup_name(i), 'gsub_single', (), ())
-            self.font.addLookupSubtable(lookup_name(i), lookup_sub_name(i))
+            print(' ...created as\033[1;36m', ligature_name, end='')
 
-            if char not in self.font:
-                # We assume here that this is because char is a single letter
-                # (e.g. 'w') rather than a character name, and the font we're
-                # editing doesn't have glyphnames for letters.
-                self.font[ord(char)].glyphname = char
+            lookup_name = lambda i: 'lookup.{}.{}'.format(self._lig_counter, i)
+            lookup_sub_name = lambda i: 'lookup.sub.{}.{}'.format(self._lig_counter, i)
+            cr_name = lambda i: 'CR.{}.{}'.format(self._lig_counter, i)
 
-            if i < len(input_chars) - 1:
-                self.font.createChar(-1, cr_name(i))
-                self.font.selection.none()
-                self.font.selection.select(cr_name(i))
-                self.font.paste()
+            for i, char in enumerate(input_chars):
+                self.font.addLookup(lookup_name(i), 'gsub_single', (), ())
+                self.font.addLookupSubtable(lookup_name(i), lookup_sub_name(i))
 
-                self.font[char].addPosSub(lookup_sub_name(i), cr_name(i))
-            else:
-                self.font[char].addPosSub(lookup_sub_name(i), ligature_name)
+                if char not in self.font:
+                    # We assume here that this is because char is a single letter
+                    # (e.g. 'w') rather than a character name, and the font we're
+                    # editing doesn't have glyphnames for letters.
+                    self.font[ord(char)].glyphname = char
 
-        calt_lookup_name = 'calt.{}'.format(self._lig_counter)
-        self.font.addLookup(calt_lookup_name, 'gsub_contextchain', (),
-            (('calt', (('DFLT', ('dflt',)),
-                       ('arab', ('dflt',)),
-                       ('armn', ('dflt',)),
-                       ('cyrl', ('SRB ', 'dflt')),
-                       ('geor', ('dflt',)),
-                       ('grek', ('dflt',)),
-                       ('lao ', ('dflt',)),
-                       ('latn', ('CAT ', 'ESP ', 'GAL ', 'ISM ', 'KSM ', 'LSM ', 'MOL ', 'NSM ', 'ROM ', 'SKS ', 'SSM ', 'dflt')),
-                       ('math', ('dflt',)),
-                       ('thai', ('dflt',)))),))
-        #print('CALT %s (%s)' % (calt_lookup_name, firacode_ligature_name))
-        for i, char in enumerate(input_chars):
-            self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i),
-                '{prev} | {cur} @<{lookup}> | {next}',
-                prev = ' '.join(cr_name(j) for j in range(i)),
-                cur = char,
-                lookup = lookup_name(i),
-                next = ' '.join(input_chars[i+1:]))
+                if i < len(input_chars) - 1:
+                    self.font.createChar(-1, cr_name(i))
+                    self.font.selection.none()
+                    self.font.selection.select(cr_name(i))
+                    self.font.paste()
 
-        # Add ignore rules
-        self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i+1),
-            '| {first} | {rest} {last}',
-            first = input_chars[0],
-            rest = ' '.join(input_chars[1:]),
-            last = input_chars[-1])
-        self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i+2),
-            '{first} | {first} | {rest}',
-            first = input_chars[0],
-            rest = ' '.join(input_chars[1:]))
+                    self.font[char].addPosSub(lookup_sub_name(i), cr_name(i))
+                else:
+                    self.font[char].addPosSub(lookup_sub_name(i), ligature_name)
 
-        print(' \033[1;37m[\033[1;36mX\033[1;37m]\033[0m')
+            calt_lookup_name = 'calt.{}'.format(self._lig_counter)
+            self.font.addLookup(calt_lookup_name, 'gsub_contextchain', (),
+                (('calt', (('DFLT', ('dflt',)),
+                        ('arab', ('dflt',)),
+                        ('armn', ('dflt',)),
+                        ('cyrl', ('SRB ', 'dflt')),
+                        ('geor', ('dflt',)),
+                        ('grek', ('dflt',)),
+                        ('lao ', ('dflt',)),
+                        ('latn', ('CAT ', 'ESP ', 'GAL ', 'ISM ', 'KSM ', 'LSM ', 'MOL ', 'NSM ', 'ROM ', 'SKS ', 'SSM ', 'dflt')),
+                        ('math', ('dflt',)),
+                        ('thai', ('dflt',)))),))
+            #print('CALT %s (%s)' % (calt_lookup_name, firacode_ligature_name))
+            for i, char in enumerate(input_chars):
+                self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i),
+                    '{prev} | {cur} @<{lookup}> | {next}',
+                    prev = ' '.join(cr_name(j) for j in range(i)),
+                    cur = char,
+                    lookup = lookup_name(i),
+                    next = ' '.join(input_chars[i+1:]))
+
+            # Add ignore rules
+            self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i+1),
+                '| {first} | {rest} {last}',
+                first = input_chars[0],
+                rest = ' '.join(input_chars[1:]),
+                last = input_chars[-1])
+            self.add_calt(calt_lookup_name, 'calt.{}.{}'.format(self._lig_counter, i+2),
+                '{first} | {first} | {rest}',
+                first = input_chars[0],
+                rest = ' '.join(input_chars[1:]))
+
+            print(' \033[1;30m[\033[1;30mSuccess\033[1;30m]\033[0m')
+
+        except Exception as e:
+            print('\033[1;31m  ...ERROR!\033[0;31m', e, '\033[0m')
 
     def add_calt(self, calt_name, subtable_name, spec, **kwargs):
         spec = spec.format(**kwargs)
