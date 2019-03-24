@@ -35,16 +35,13 @@ if sys.version_info[0] != 2:
     sys.exit(1)
 
 def get_ligature_source(fontname):
-    for weight in ['Bold', 'Retina', 'Medium', 'Regular', 'Light']:
+    variant = 'Sans'
+    for weight in ['Bold']:
         if fontname.endswith('-' + weight):
             # Exact match for one of the Fira Code weights
-            return 'fonts/fira/distr/otf/FiraCode-%s.otf' % weight
-
-    # No exact match. Guess that we want 'Bold' if the font name has 'Bold' in
-    # it, and 'Regular' otherwise.
-    if 'Bold' in fontname:
-        return 'fonts/fira/distr/otf/FiraCode-Bold.otf'
-    return 'fonts/fira/distr/otf/FiraCode-Regular.otf'
+            return 'fonts/DejaVu/DejaVu{}-{}.ttf'.format(variant, weight)
+    # else return base fontface
+    return 'fonts/DejaVu/DejaVu{}.ttf'.format(variant)
 
 class LigatureCreator(object):
 
