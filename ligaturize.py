@@ -16,6 +16,7 @@ import psMat
 import os
 from os import path
 import sys
+import unicodedata
 
 from ligatures import ligatures
 
@@ -134,17 +135,22 @@ class LigatureCreator(object):
         glyph.width = self.emwidth
 
     def add_ligature(self, input_chars, firacode_ligature_name):
+        print('\033[1;32m{action}:\033[0m \033[1;30m{codepoint}\033[0m (\033[35m{name}\033[0m) \033[1;36m{trigger}\033[0m'.format(
+            action='ADDING', codepoint=hex(firacode_ligature_name), name=unicodedata.name(unichr(firacode_ligature_name)), trigger=''.join(input_chars)), end=' ')
         if firacode_ligature_name is None:
             # No ligature name -- we're just copying a bunch of individual characters.
+            print('    \033[1;36Copying Character Glyphs')
             self.copy_character_glyphs(input_chars)
             return
 
         if not self.copy_ligature_from_source(firacode_ligature_name):
             # Ligature not in source font.
+            print('\033[1;31m  ->  ERROR! \033[0;31mLigature not in source font!\033[0m')
             return
 
         self._lig_counter += 1
         ligature_name = 'lig.{}'.format(self._lig_counter)
+        print('\033[1;36m'+'HELLO')
 
         self.font.createChar(-1, ligature_name)
         self.font.selection.none()
@@ -212,6 +218,8 @@ class LigatureCreator(object):
             first = input_chars[0],
             rest = ' '.join(input_chars[1:]))
 
+        print('\033[1;37m[\033[1;36mX\033[1;37m]\033[0m')
+
     def add_calt(self, calt_name, subtable_name, spec, **kwargs):
         spec = spec.format(**kwargs)
         #print('    %s: %s ' % (subtable_name, spec))
@@ -245,7 +253,7 @@ def update_font_metadata(font, new_name):
         font.fullname = new_name
         font.fontname = new_name.replace(' ', '')
 
-    print("Ligaturizing font %s (%s) as '%s'" % (
+    print("Ligaturizing font \033[33m%s \033[1;33m(\033[1;34m%s\033[33m)\033[0m as \033[1;34m'%s'\33[0m" % (
         path.basename(font.path), old_name, new_name))
 
     font.copyright += COPYRIGHT
@@ -260,6 +268,8 @@ def ligaturize_font(input_font_file, output_dir, ligature_font_file,
     if not ligature_font_file:
         ligature_font_file = get_ligature_source(font.fontname)
 
+    print('\033[1;0mFetching ligatures from\033[1;37m', ligature_font_file, '\033[0m')
+
     if output_name:
         name = output_name
     else:
@@ -269,7 +279,7 @@ def ligaturize_font(input_font_file, output_dir, ligature_font_file,
 
     update_font_metadata(font, name)
 
-    print('    ...using ligatures from %s' % ligature_font_file)
+    print('    ...using ligatures from \033[1;37m%s' % ligature_font_file)
     firacode = fontforge.open(ligature_font_file)
 
     creator = LigatureCreator(font, firacode, **kwargs)
@@ -294,7 +304,7 @@ def ligaturize_font(input_font_file, output_dir, ligature_font_file,
 
     # Generate font & move to output directory
     output_font_file = path.join(output_dir, font.fontname + output_font_type)
-    print("    ...saving to '%s' (%s)" % (output_font_file, font.fullname))
+    print("    ...saving to \033[33m'%s' (\033[1;34m%s\033[33m)" % (output_font_file, font.fullname))
     font.generate(output_font_file)
 
 
