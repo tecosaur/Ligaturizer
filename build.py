@@ -11,7 +11,7 @@ LIGATURIZED_FONT_NAME_PREFIX = "Liga"
 
 # Should we copy some individual punctuations characters like &, ~, and <>,
 # as well as ligatures? The full list is in ligatures.py.
-COPY_CHARACTER_GLYPHS = False
+COPY_CHARACTER_GLYPHS = True
 
 # If copying individual characters, how different in width (relative to the font
 # we're ligaturizing) should they be before we attempt to width-correct them?
