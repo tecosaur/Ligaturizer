@@ -62,10 +62,12 @@ class LigatureCreator(object):
     def copy_ligature_from_source(self, ligature_name):
         try:
             self.firacode.selection.none()
+            print(' ...Selecting', ligature_name, end='')
             self.firacode.selection.select(("unicode"), ligature_name)
             self.firacode.copy()
             return True
-        except ValueError:
+        except ValueError as e:
+            print(' \033[1;31m...ERROR!\033[0;31m', e, '\033[0m', end='')
             return False
 
     def correct_character_width(self, glyph):
@@ -106,8 +108,9 @@ class LigatureCreator(object):
     def copy_character_glyphs(self, chars):
         """Copy individual (non-ligature) characters from the ligature font."""
         if not self.should_copy_character_glyphs:
+            print('  \033[0;36m...not copying character glyphs (self.should_copy_character_glyphs)\033[0m')
             return
-        print("    ...copying %d character glyphs..." % (len(chars)))
+        print("    \033[0;36m...copying %d character glyphs...\033[0m" % (len(chars)))
 
         for char in chars:
             self.firacode.selection.none()
@@ -136,16 +139,18 @@ class LigatureCreator(object):
 
     def add_ligature(self, input_chars, firacode_ligature_name):
         print('\033[1;32m{action}:\033[0m \033[1;30m{codepoint}\033[0m (\033[35m{name}\033[0m) \033[1;36m{trigger}\033[0m'.format(
-            action='ADDING', codepoint=hex(firacode_ligature_name), name=unicodedata.name(unichr(firacode_ligature_name)), trigger=''.join(input_chars)), end=' ')
+            action='ADDING',
+            codepoint=hex(firacode_ligature_name) if firacode_ligature_name != None else '',
+            name=unicodedata.name(unichr(firacode_ligature_name)) if firacode_ligature_name != None else '\033[37m,\033[35m '.join(map(lambda e: str(e), input_chars)),
+            trigger=''.join(map(lambda e: str(e), input_chars)) if firacode_ligature_name != None else ''), end=' ')
         if firacode_ligature_name is None:
             # No ligature name -- we're just copying a bunch of individual characters.
-            print('    \033[1;36Copying Character Glyphs')
             self.copy_character_glyphs(input_chars)
             return
 
         if not self.copy_ligature_from_source(firacode_ligature_name):
             # Ligature not in source font.
-            print('\033[1;31m  ->  ERROR! \033[0;31mLigature not in source font!\033[0m')
+            print('\033[1;31m  ...ERROR! \033[0;31mLigature not in source font!\033[0m')
             return
 
         self._lig_counter += 1
