@@ -39,9 +39,9 @@ def get_ligature_source(fontname):
     for weight in ['Bold']:
         if fontname.endswith('-' + weight):
             # Exact match for one of the Fira Code weights
-            return 'fonts/DejaVu/DejaVu{}-{}.ttf'.format(variant, weight)
+            return 'fonts/dejaVu/DejaVu{}-{}.ttf'.format(variant, weight)
     # else return base fontface
-    return 'fonts/DejaVu/DejaVu{}.ttf'.format(variant)
+    return 'fonts/dejaVu/DejaVu{}.ttf'.format(variant)
 
 class LigatureCreator(object):
 
@@ -61,7 +61,7 @@ class LigatureCreator(object):
     def copy_ligature_from_source(self, ligature_name):
         try:
             self.firacode.selection.none()
-            self.firacode.selection.select(ligature_name)
+            self.firacode.selection.select(("unicode"), ligature_name)
             self.firacode.copy()
             return True
         except ValueError:

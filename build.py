@@ -23,7 +23,7 @@ SCALE_CHARACTER_GLYPHS_THRESHOLD = 0.1
 # Don't put fonts licensed under UFL here, and don't put fonts licensed under
 # SIL OFL here either unless they haven't specified a Reserved Font Name.
 
-prefixed_fonts = ["fonts/plex/*.otf"]
+prefixed_fonts = ["fonts/plex/IBMPlexSans-Regular.otf"]
 
 #### Fonts that need to be renamed. ####
 # These are fonts that either have name collisions with the prefixed_fonts
